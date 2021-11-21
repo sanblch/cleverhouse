@@ -19,7 +19,7 @@ impl House {
         todo!()
     }
 
-    fn _rooms(&self) -> Vec<String> {
+    fn _list_rooms(&self) -> Vec<String> {
         todo!()
     }
 
@@ -30,19 +30,15 @@ impl House {
 
 struct Room {
     _name: String,
-    _devices: Vec<Box<dyn Device>>,
+    _devices: Vec<DeviceType>,
 }
 
 impl Room {
-    fn _add_device(
-        &self,
-        _device_name: String,
-        _device_type: DeviceType,
-    ) -> Result<&mut dyn Device, String> {
+    fn _add_device(&self, _device_type: DeviceType) -> Result<(), String> {
         todo!()
     }
 
-    fn _get_device(&self, _device_name: String) -> Result<&'static mut dyn Device, String> {
+    fn _get_device(&self, _device_name: String) -> Result<DeviceType, String> {
         todo!()
     }
 
@@ -50,19 +46,18 @@ impl Room {
         todo!()
     }
 
-    fn _devices(&self) -> Result<Vec<String>, String> {
+    fn _list_devices(&self) -> Result<Vec<String>, String> {
         todo!()
     }
 }
 
 pub enum DeviceType {
-    SmartSocket,
-    Thermometer,
+    SmartSocket(String, String),
+    Thermometer(String, String),
 }
 
 pub trait Device {
     fn name(&self) -> &str;
-    fn device_type(&self) -> DeviceType;
     fn description(&self) -> &str;
 }
 
@@ -74,9 +69,6 @@ struct Thermometer {
 impl Device for Thermometer {
     fn name(&self) -> &str {
         &*self.name
-    }
-    fn device_type(&self) -> DeviceType {
-        DeviceType::Thermometer
     }
     fn description(&self) -> &str {
         &*self.description
@@ -97,9 +89,6 @@ struct SmartSocket {
 impl Device for SmartSocket {
     fn name(&self) -> &str {
         &*self.name
-    }
-    fn device_type(&self) -> DeviceType {
-        DeviceType::SmartSocket
     }
     fn description(&self) -> &str {
         &*self.description
