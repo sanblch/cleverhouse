@@ -5,7 +5,10 @@ struct House {
 
 impl House {
     fn new(_name: String) -> Self {
-        House { _name, _rooms: Vec::new() }
+        House {
+            _name,
+            _rooms: Vec::new(),
+        }
     }
 
     fn _create_room(&self, _name: String) -> Result<&'static mut Room, String> {
@@ -20,22 +23,6 @@ impl House {
         todo!()
     }
 
-    fn _add_device(&self, _room_name: String, _device_name: String, _device_type: DeviceType) -> Result<&mut dyn Device, String> {
-        todo!()
-    }
-
-    fn _get_device(&self, _room_name: String, _device_name: String) -> Result<&'static mut dyn Device, String> {
-        todo!()
-    }
-
-    fn _remove_device(&self, _room_name: String, _device_name: String) -> Result<(), String> {
-        todo!()
-    }
-
-    fn _devices(&self, _room_name: String) -> Result<Vec<String>, String> {
-        todo!()
-    }
-
     fn _report(&self) {
         todo!()
     }
@@ -44,6 +31,28 @@ impl House {
 struct Room {
     _name: String,
     _devices: Vec<Box<dyn Device>>,
+}
+
+impl Room {
+    fn _add_device(
+        &self,
+        _device_name: String,
+        _device_type: DeviceType,
+    ) -> Result<&mut dyn Device, String> {
+        todo!()
+    }
+
+    fn _get_device(&self, _device_name: String) -> Result<&'static mut dyn Device, String> {
+        todo!()
+    }
+
+    fn _remove_device(&self, _device_name: String) -> Result<(), String> {
+        todo!()
+    }
+
+    fn _devices(&self) -> Result<Vec<String>, String> {
+        todo!()
+    }
 }
 
 pub enum DeviceType {
