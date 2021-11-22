@@ -1,17 +1,17 @@
-struct House {
+pub struct House {
     _name: String,
     _rooms: Vec<Room>,
 }
 
 impl House {
-    fn new(_name: String) -> Self {
+    pub fn new(_name: String) -> Self {
         House {
             _name,
             _rooms: Vec::new(),
         }
     }
 
-    fn _create_room(&self, _name: String) -> Result<&'static mut Room, String> {
+    fn _add_room(&self, _room: Room) -> Result<(), String> {
         todo!()
     }
 
@@ -28,7 +28,7 @@ impl House {
     }
 }
 
-struct Room {
+pub struct Room {
     _name: String,
     _devices: Vec<DeviceType>,
 }
@@ -52,8 +52,8 @@ impl Room {
 }
 
 pub enum DeviceType {
-    SmartSocket(String, String),
-    Thermometer(String, String),
+    SmartSocket(SmartSocket),
+    Thermometer(Thermometer),
 }
 
 pub trait Device {
@@ -61,7 +61,7 @@ pub trait Device {
     fn description(&self) -> &str;
 }
 
-struct Thermometer {
+pub struct Thermometer {
     name: String,
     description: String,
 }
@@ -81,7 +81,7 @@ impl Thermometer {
     }
 }
 
-struct SmartSocket {
+pub struct SmartSocket {
     name: String,
     description: String,
 }
@@ -108,6 +108,6 @@ impl SmartSocket {
 mod tests {
     #[test]
     fn create_house() {
-        let mut _house = House::new(String::from("MyHouse"));
+        let mut _house = crate::House::new(String::from("MyHouse"));
     }
 }
