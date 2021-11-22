@@ -104,6 +104,10 @@ impl SmartSocket {
     }
 }
 
-fn main() {
-    let mut _house = House::new(String::from("MyHouse"));
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn create_house() {
+        let mut _house = House::new(String::from("MyHouse"));
+    }
 }
