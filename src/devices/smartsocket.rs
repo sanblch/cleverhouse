@@ -1,8 +1,8 @@
 use crate::device::Device;
 
 pub struct SmartSocket {
-    name: String,
-    description: String,
+    pub name: String,
+    pub description: String,
 }
 
 impl Device for SmartSocket {
@@ -15,10 +15,25 @@ impl Device for SmartSocket {
 }
 
 impl SmartSocket {
-    fn _on() {
+    pub fn on(&self) {
         todo!()
     }
-    fn _off() {
+    pub fn off(&self) {
         todo!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_smartsocket() {
+        let smartsocket = SmartSocket {
+            name: String::from("SmartSocket"),
+            description: String::from("a smart socket"),
+        };
+        smartsocket.on();
+        smartsocket.off();
     }
 }
