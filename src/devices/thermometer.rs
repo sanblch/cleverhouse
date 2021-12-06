@@ -1,22 +1,31 @@
 use crate::device::Device;
+use std::f64::NAN;
 
 pub struct Thermometer {
-    pub name: String,
     pub description: String,
+    temperature: f64,
 }
 
 impl Device for Thermometer {
-    fn name(&self) -> &str {
-        &*self.name
-    }
     fn description(&self) -> &str {
         &*self.description
     }
 }
 
 impl Thermometer {
+    pub fn new(description: String) -> Self {
+        Thermometer {
+            description,
+            temperature: NAN,
+        }
+    }
+
+    pub fn set(&mut self, temperature: f64) {
+        self.temperature = temperature;
+    }
+
     pub fn temperature(&self) -> f64 {
-        todo!()
+        self.temperature
     }
 }
 
@@ -26,10 +35,9 @@ mod tests {
 
     #[test]
     fn test_thermometer() {
-        let thermometer = Thermometer {
-            name: String::from("Thermometer"),
-            description: String::from("a thermometer"),
-        };
-        thermometer.temperature();
+        let mut thermometer = Thermometer::new("a thermometer".to_string());
+        assert_eq!(thermometer.temperature().is_nan(), true);
+        thermometer.set(100.0);
+        assert_eq!(thermometer.temperature(), 100.0);
     }
 }

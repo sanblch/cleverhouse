@@ -1,25 +1,33 @@
 use crate::device::Device;
 
 pub struct SmartSocket {
-    pub name: String,
     pub description: String,
+    on: bool,
 }
 
 impl Device for SmartSocket {
-    fn name(&self) -> &str {
-        &*self.name
-    }
     fn description(&self) -> &str {
         &*self.description
     }
 }
 
 impl SmartSocket {
-    pub fn on(&self) {
-        todo!()
+    pub fn new(description: String) -> Self {
+        SmartSocket {
+            description,
+            on: false,
+        }
     }
-    pub fn off(&self) {
-        todo!()
+
+    pub fn is_on(&self) -> bool {
+        self.on
+    }
+
+    pub fn on(&mut self) {
+        self.on = true;
+    }
+    pub fn off(&mut self) {
+        self.on = false;
     }
 }
 
@@ -29,11 +37,11 @@ mod tests {
 
     #[test]
     fn test_smartsocket() {
-        let smartsocket = SmartSocket {
-            name: String::from("SmartSocket"),
-            description: String::from("a smart socket"),
-        };
+        let mut smartsocket = SmartSocket::new(String::from("a smart socket"));
+        assert_eq!(smartsocket.is_on(), false);
         smartsocket.on();
+        assert_eq!(smartsocket.is_on(), true);
         smartsocket.off();
+        assert_eq!(smartsocket.is_on(), false);
     }
 }
