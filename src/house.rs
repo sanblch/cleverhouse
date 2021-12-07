@@ -1,6 +1,7 @@
 use crate::room::Room;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct House {
     pub name: String,
     rooms: HashMap<String, Room>,
@@ -20,7 +21,7 @@ impl House {
                 self.rooms.insert(name.to_owned(), room);
                 Err(Error::AlreadyExist)
             }
-            None => Ok(())
+            None => Ok(()),
         }
     }
 
@@ -40,7 +41,7 @@ impl House {
     }
 
     pub fn report(&self) {
-        todo!()
+        println!("{:?}", self);
     }
 }
 
@@ -48,7 +49,6 @@ impl House {
 pub enum Error {
     AlreadyExist,
     NotExist,
-    NotUnique,
 }
 
 impl std::fmt::Display for Error {
@@ -56,7 +56,6 @@ impl std::fmt::Display for Error {
         match *self {
             Error::AlreadyExist => write!(f, "House already contains a room with the name"),
             Error::NotExist => write!(f, "Room doesn't exist"),
-            Error::NotUnique => write!(f, "Room name not unique"),
         }
     }
 }
@@ -68,7 +67,6 @@ mod tests {
     use super::*;
 
     const H1: &str = "MyHouse1";
-    const H2: &str = "MyHouse2";
     const R1: &str = "MyRoom1";
     const R2: &str = "MyRoom2";
 
@@ -95,9 +93,6 @@ mod tests {
         assert_eq!(house.add_room(R1, Room::new()), Ok(()));
         assert_eq!(house.add_room(R1, Room::new()), Err(Error::AlreadyExist));
         assert_eq!(house.list_rooms(), vec![R1]);
-
-        let mut house2 = House::new(H2.to_string());
-        assert_eq!(house2.add_room(R1, Room::new()), Err(Error::NotUnique));
     }
 
     #[test]
@@ -114,5 +109,11 @@ mod tests {
         let house = test_house();
         assert_eq!(house.get_room(R1).is_some(), true);
         assert_eq!(house.get_room(R2).is_none(), true);
+    }
+
+    #[test]
+    fn report_house() {
+        let house = test_house();
+        house.report();
     }
 }

@@ -1,6 +1,7 @@
 use crate::device::DeviceType;
 use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct Room {
     devices: HashMap<String, DeviceType>,
 }
@@ -12,18 +13,30 @@ impl Default for Room {
 }
 
 impl Room {
-    pub fn new() ->Self {
+    pub fn new() -> Self {
         Room {
-            devices: HashMap::new()
+            devices: HashMap::new(),
         }
     }
 
     pub fn add_device(&mut self, name: &str, r#type: DeviceType) -> Result<(), Error> {
         match self.devices.insert(name.to_owned(), r#type) {
             Some(device) => {
+                let matches: bool;
+                match self.devices.get(&name.to_owned()) {
+                    Some(device2) => {
+                        matches =
+                            std::mem::discriminant(&device) == std::mem::discriminant(device2);
+                    }
+                    None => unreachable!(),
+                }
                 self.devices.insert(name.to_owned(), device);
-                Err(Error::AlreadyExist)
-            },
+                if matches {
+                    Err(Error::AlreadyExist)
+                } else {
+                    Err(Error::NameUsed)
+                }
+            }
             None => Ok(()),
         }
     }
@@ -132,7 +145,9 @@ mod tests {
             ),
             Err(Error::NameUsed)
         );
-        assert_eq!(room.list_devices(), vec![S, T]);
+        let mut list = room.list_devices();
+        list.sort();
+        assert_eq!(list, vec![S, T]);
     }
 
     #[test]
@@ -150,7 +165,7 @@ mod tests {
         match room.get_device(S) {
             Some(u) => match u {
                 DeviceType::SmartSocket(device) => {
-                    // assert_eq!(test_smartsocke, device.name);
+                    assert_eq!(device.description, "A type of socket".to_string());
                 }
                 DeviceType::Thermometer(_device) => unreachable!(),
             },
@@ -160,7 +175,7 @@ mod tests {
             Some(u) => match u {
                 DeviceType::SmartSocket(_device) => unreachable!(),
                 DeviceType::Thermometer(device) => {
-                    // assert_eq!(test_thermometer().name, device.name);
+                    assert_eq!(device.description, "A type of thermometer".to_string());
                 }
             },
             None => unreachable!(),

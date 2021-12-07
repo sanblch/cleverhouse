@@ -1,5 +1,6 @@
 use crate::device::Device;
 
+#[derive(Debug)]
 pub struct SmartSocket {
     pub description: String,
     on: bool,

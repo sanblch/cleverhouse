@@ -1,6 +1,7 @@
 use crate::device::Device;
 use std::f64::NAN;
 
+#[derive(Debug)]
 pub struct Thermometer {
     pub description: String,
     temperature: f64,

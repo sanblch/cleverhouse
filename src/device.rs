@@ -1,6 +1,7 @@
 use crate::devices::smartsocket::SmartSocket;
 use crate::devices::thermometer::Thermometer;
 
+#[derive(Debug)]
 pub enum DeviceType {
     SmartSocket(SmartSocket),
     Thermometer(Thermometer),
