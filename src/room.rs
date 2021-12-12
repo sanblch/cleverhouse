@@ -1,7 +1,8 @@
 use crate::device::DeviceType;
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Room {
     devices: HashMap<String, DeviceType>,
 }
@@ -20,24 +21,18 @@ impl Room {
     }
 
     pub fn add_device(&mut self, name: &str, r#type: DeviceType) -> Result<(), Error> {
-        match self.devices.insert(name.to_owned(), r#type) {
-            Some(device) => {
-                let matches: bool;
-                match self.devices.get(&name.to_owned()) {
-                    Some(device2) => {
-                        matches =
-                            std::mem::discriminant(&device) == std::mem::discriminant(device2);
-                    }
-                    None => unreachable!(),
-                }
-                self.devices.insert(name.to_owned(), device);
-                if matches {
+        match self.devices.entry(name.to_owned()) {
+            Entry::Occupied(item) => {
+                if std::mem::discriminant(item.get()) == std::mem::discriminant(&r#type) {
                     Err(Error::AlreadyExist)
                 } else {
                     Err(Error::NameUsed)
                 }
             }
-            None => Ok(()),
+            Entry::Vacant(item) => {
+                item.insert(r#type);
+                Ok(())
+            }
         }
     }
 
@@ -45,15 +40,14 @@ impl Room {
         self.devices.get(&name.to_owned())
     }
 
-    pub fn remove_device(&mut self, name: &str) -> Result<(), Error> {
-        match self.devices.remove(&name.to_string()) {
-            Some(_device) => Ok(()),
-            None => Err(Error::NotExist),
-        }
+    pub fn remove_device(&mut self, name: &str) -> Result<DeviceType, Error> {
+        self.devices
+            .remove(&name.to_string())
+            .ok_or(Error::NotExist)
     }
 
-    pub fn list_devices(&self) -> Vec<&str> {
-        self.devices.iter().map(|c| c.0.as_str()).collect()
+    pub fn list_devices(&self) -> impl Iterator<Item = &str> {
+        self.devices.iter().map(|c| c.0.as_str())
     }
 }
 
@@ -109,7 +103,10 @@ mod tests {
     #[test]
     fn create_room() {
         let room = test_empty_room();
-        assert_eq!(room.list_devices(), Vec::<String>::new());
+        assert_eq!(
+            room.list_devices().collect::<Vec<&str>>(),
+            Vec::<String>::new()
+        );
     }
 
     #[test]
@@ -145,7 +142,7 @@ mod tests {
             ),
             Err(Error::NameUsed)
         );
-        let mut list = room.list_devices();
+        let mut list = room.list_devices().collect::<Vec<&str>>();
         list.sort();
         assert_eq!(list, vec![S, T]);
     }
@@ -153,10 +150,19 @@ mod tests {
     #[test]
     fn remove_device() {
         let mut room = test_room();
-        assert_eq!(room.remove_device(S), Ok(()));
-        assert_eq!(room.remove_device(T), Ok(()));
+        assert_eq!(
+            room.remove_device(S),
+            Ok(DeviceType::SmartSocket(test_smartsocket()))
+        );
+        assert_eq!(
+            room.remove_device(T),
+            Ok(DeviceType::Thermometer(test_thermometer()))
+        );
         assert_eq!(room.remove_device(T), Err(Error::NotExist));
-        assert_eq!(room.list_devices(), Vec::<String>::new());
+        assert_eq!(
+            room.list_devices().collect::<Vec<&str>>(),
+            Vec::<String>::new()
+        );
     }
 
     #[test]

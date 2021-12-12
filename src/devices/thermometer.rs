@@ -13,6 +13,14 @@ impl Device for Thermometer {
     }
 }
 
+impl PartialEq for Thermometer {
+    fn eq(&self, other: &Thermometer) -> bool {
+        self.description == other.description
+            && (self.temperature == other.temperature
+                || self.temperature.is_nan() && other.temperature.is_nan())
+    }
+}
+
 impl Thermometer {
     pub fn new(description: String) -> Self {
         Thermometer {

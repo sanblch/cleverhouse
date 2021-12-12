@@ -1,6 +1,6 @@
 use crate::device::Device;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct SmartSocket {
     pub description: String,
     on: bool,

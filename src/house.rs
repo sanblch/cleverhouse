@@ -1,4 +1,5 @@
 use crate::room::Room;
+use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -16,12 +17,12 @@ impl House {
     }
 
     pub fn add_room(&mut self, name: &str, room: Room) -> Result<(), Error> {
-        match self.rooms.insert(name.to_owned(), room) {
-            Some(room) => {
-                self.rooms.insert(name.to_owned(), room);
-                Err(Error::AlreadyExist)
+        match self.rooms.entry(name.to_owned()) {
+            Entry::Occupied(_) => Err(Error::AlreadyExist),
+            Entry::Vacant(item) => {
+                item.insert(room);
+                Ok(())
             }
-            None => Ok(()),
         }
     }
 
@@ -29,15 +30,12 @@ impl House {
         self.rooms.get(&name.to_owned())
     }
 
-    pub fn remove_room(&mut self, name: &str) -> Result<(), Error> {
-        match self.rooms.remove(&name.to_string()) {
-            Some(_room) => Ok(()),
-            None => Err(Error::NotExist),
-        }
+    pub fn remove_room(&mut self, name: &str) -> Result<Room, Error> {
+        self.rooms.remove(&name.to_string()).ok_or(Error::NotExist)
     }
 
-    pub fn list_rooms(&self) -> Vec<&str> {
-        self.rooms.iter().map(|c| c.0.as_str()).collect()
+    pub fn list_rooms(&self) -> impl Iterator<Item = &str> {
+        self.rooms.iter().map(|c| c.0.as_str())
     }
 
     pub fn report(&self) {
@@ -84,7 +82,10 @@ mod tests {
     fn create_house() {
         let house = test_empty_house();
         assert_eq!(house.name, test_empty_house().name);
-        assert_eq!(house.list_rooms(), Vec::<String>::new());
+        assert_eq!(
+            house.list_rooms().collect::<Vec<&str>>(),
+            Vec::<String>::new()
+        );
     }
 
     #[test]
@@ -92,16 +93,19 @@ mod tests {
         let mut house = test_empty_house();
         assert_eq!(house.add_room(R1, Room::new()), Ok(()));
         assert_eq!(house.add_room(R1, Room::new()), Err(Error::AlreadyExist));
-        assert_eq!(house.list_rooms(), vec![R1]);
+        assert_eq!(house.list_rooms().collect::<Vec<&str>>(), vec![R1]);
     }
 
     #[test]
     fn remove_room() {
         let mut house = test_house();
-        assert_eq!(house.list_rooms(), vec![R1]);
-        assert_eq!(house.remove_room(R1), Ok(()));
+        assert_eq!(house.list_rooms().collect::<Vec<&str>>(), vec![R1]);
+        assert_eq!(house.remove_room(R1), Ok(Room::new()));
         assert_eq!(house.remove_room(R1), Err(Error::NotExist));
-        assert_eq!(house.list_rooms(), Vec::<String>::new());
+        assert_eq!(
+            house.list_rooms().collect::<Vec<&str>>(),
+            Vec::<String>::new()
+        );
     }
 
     #[test]
