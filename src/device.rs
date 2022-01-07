@@ -1,4 +1,4 @@
-use crate::devices::smartsocket::SmartSocket;
+use crate::devices::smartsocket::simple::SmartSocket;
 use crate::devices::thermometer::Thermometer;
 
 #[derive(Debug, PartialEq)]

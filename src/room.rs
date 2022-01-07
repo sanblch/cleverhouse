@@ -75,7 +75,7 @@ impl std::error::Error for Error {}
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::devices::smartsocket::SmartSocket;
+    use crate::devices::smartsocket::simple::SmartSocket;
     use crate::devices::thermometer::Thermometer;
 
     const S: &str = "SmartSocket";
