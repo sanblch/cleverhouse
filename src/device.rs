@@ -1,5 +1,5 @@
 use crate::devices::smartsocket::simple::SmartSocket;
-use crate::devices::thermometer::Thermometer;
+use crate::devices::thermometer::simple::Thermometer;
 
 #[derive(Debug, PartialEq)]
 pub enum DeviceType {

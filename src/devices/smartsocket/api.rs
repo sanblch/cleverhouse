@@ -6,7 +6,6 @@ use thiserror::Error;
 pub enum SmartSocketError {
     #[error("IO error: {0}")]
     Io(#[from] io::Error),
-    Unexpected,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
