@@ -1,69 +1,72 @@
-use serde::de::DeserializeOwned;
-use serde::Serialize;
+use std::{f64::NAN, net::ToSocketAddrs};
 
-use std::io::{Read, Write};
-use std::net::{Incoming, TcpListener, TcpStream, ToSocketAddrs};
+use rand::Rng;
 
-pub struct SmartSocketServer {
-    listener: TcpListener,
+use crate::devices::smartsocket::api::{Request, Response, Status};
+
+use super::stp::{SmartSocketServer, SmartSocketStream};
+
+pub struct Server {
+    server: SmartSocketServer,
+    status: Status,
+    power: f64,
 }
 
-pub struct SmartSocketStream {
-    pub stream: TcpStream,
-}
-
-pub struct SmartSocketIncoming<'a> {
-    pub incoming: Incoming<'a>,
-}
-
-impl SmartSocketServer {
-    pub fn bind(addr: &str) -> std::io::Result<Self> {
-        let listener = TcpListener::bind(addr)?;
-        let server = SmartSocketServer { listener };
+impl Server {
+    pub fn bind<A: ToSocketAddrs>(addr: A) -> std::io::Result<Server> {
+        let res = SmartSocketServer::bind(addr)?;
+        let server = Server {
+            server: res,
+            status: Status::Off,
+            power: NAN,
+        };
         Ok(server)
     }
 
-    pub fn incoming(&self) -> SmartSocketIncoming<'_> {
-        let incoming = self.listener.incoming();
-        SmartSocketIncoming { incoming }
-    }
-}
+    pub fn run(&mut self) {
+        let mut rng = rand::thread_rng();
 
-impl Iterator for SmartSocketIncoming<'_> {
-    fn next(&mut self) -> Option<Self::Item> {
-        let res = self.incoming.next()?;
-        match res {
-            Ok(e) => {
-                let stream = SmartSocketStream { stream: e };
-                Some(Ok(stream))
+        for stream_res in self.server.incoming() {
+            match stream_res {
+                Err(e) => {
+                    println!("Error occured on stream creation: {:?}", e);
+                    continue;
+                }
+                Ok(mut stream) => {
+                    let res = stream.receive().unwrap();
+                    println!("request = {:?}", res);
+                    match res {
+                        Request::On => {
+                            self.status = Status::On;
+                            Server::send(stream, Response::Status(self.status.clone()));
+                        }
+                        Request::Off => {
+                            self.status = Status::Off;
+                            Server::send(stream, Response::Status(self.status.clone()));
+                        }
+                        Request::Status => {
+                            Server::send(stream, Response::Status(self.status.clone()));
+                        }
+                        Request::Power => {
+                            if self.status == Status::On {
+                                self.power = 50.0 + rng.gen_range(0.0..1.0);
+                            } else {
+                                self.power = NAN;
+                            }
+                            Server::send(stream, Response::Power(self.power));
+                        }
+                    }
+                }
             }
-            Err(e) => Some(Err(e)),
         }
     }
 
-    type Item = std::io::Result<SmartSocketStream>;
-}
-
-impl SmartSocketStream {
-    pub fn connect<A: ToSocketAddrs>(addr: A) -> std::io::Result<SmartSocketStream> {
-        let res = TcpStream::connect(addr)?;
-        let stream = SmartSocketStream {
-            stream: res,
-        };
-        Ok(stream)
-    }
-
-    pub fn receive<T: DeserializeOwned>(&mut self) -> std::io::Result<T> {
-        let mut buf = [0; 1024];
-        let size = self.stream.read(&mut buf)?;
-        let slice = &buf[0..size];
-        let res: T = serde_json::from_slice(slice)?;
-        Ok(res)
-    }
-
-    pub fn send<T: Serialize>(&mut self, msg: T) -> std::io::Result<()> {
-        let str = serde_json::to_string(&msg)?;
-        self.stream.write(str.as_bytes())?;
-        Ok(())
+    pub fn send(mut stream: SmartSocketStream, response: Response) {
+        match stream.send(response) {
+            Ok(()) => {}
+            Err(e) => {
+                println!("Error occured on send: {:?}", e);
+            }
+        }
     }
 }

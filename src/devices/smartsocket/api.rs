@@ -1,12 +1,4 @@
 use serde::{Deserialize, Serialize};
-use std::io;
-use thiserror::Error;
-
-#[derive(Debug, Error)]
-pub enum SmartSocketError {
-    #[error("IO error: {0}")]
-    Io(#[from] io::Error),
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Request {
@@ -16,7 +8,7 @@ pub enum Request {
     Power,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Clone, PartialEq, Serialize, Deserialize, Debug)]
 pub enum Status {
     On,
     Off,
@@ -24,10 +16,7 @@ pub enum Status {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Response {
-    On(Status),
-    Off(Status),
+    Error(String),
     Status(Status),
     Power(f64),
 }
-
-pub type SmartSocketResult = Result<Response, String>;

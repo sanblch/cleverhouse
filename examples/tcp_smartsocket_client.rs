@@ -1,5 +1,5 @@
-use cleverhouse_by_akrutikov::devices::smartsocket::api::{Request, SmartSocketResult};
-use cleverhouse_by_akrutikov::devices::smartsocket::server::SmartSocketStream;
+use cleverhouse_by_akrutikov::devices::smartsocket::api::{Request, Response};
+use cleverhouse_by_akrutikov::devices::smartsocket::stp::SmartSocketStream;
 use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -8,7 +8,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     client.send(Request::On)?;
 
-    let res = client.receive::<SmartSocketResult>()?;
+    let res = client.receive::<Response>()?;
     println!("response = {:?}", res);
 
     Ok(())
