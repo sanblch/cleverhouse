@@ -23,7 +23,7 @@ impl Server {
                 .send_to(&temperature.to_be_bytes(), to)
                 .expect("couldn't send data");
             println!("sent {}", temperature);
-            sleep(Duration::from_millis(500));
+            sleep(Duration::from_millis(50));
         }
     }
 }

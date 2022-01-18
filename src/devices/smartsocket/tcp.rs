@@ -19,23 +19,20 @@ impl Device for SmartSocket {
 
 impl SmartSocket {
     fn send(&mut self, request: Request) -> Option<Response> {
-        match self.client.send(request) {
-            Err(e) => {
-                println!("Send request error {:?}", e);
-                return None;
-            }
-            _ => {}
+        if let Err(e) = self.client.send(request) {
+            println!("Send request error {:?}", e);
+            return None;
         }
         let res = self.client.receive::<Response>();
         match res {
             Err(e) => {
                 println!("Receive response error {:?}", e);
-                return None;
+                None
             }
             Ok(response) => match response {
                 Response::Error(str) => {
                     println!("Error occured in smart socket: {}", str);
-                    return None;
+                    None
                 }
                 _ => Some(response),
             },
@@ -45,12 +42,12 @@ impl SmartSocket {
     fn switch(&mut self, request: Request) -> Status {
         let res = self.send(request);
         match res {
-            None => return Status::Off,
+            None => Status::Off,
             Some(response) => match response {
                 Response::Status(status) => status,
                 _ => {
                     println!("Unexpectedly receive power response");
-                    return Status::Off;
+                    Status::Off
                 }
             },
         }
@@ -65,19 +62,19 @@ impl SmartSocket {
 
     pub fn is_on(&mut self) -> bool {
         match self.switch(Request::Status) {
-            Status::On => return true,
-            Status::Off => return false,
+            Status::On => true,
+            Status::Off => false,
         }
     }
 
-    pub fn on(&mut self) {
-        match self.switch(Request::On) {
+    pub fn off(&mut self) {
+        match self.switch(Request::Off) {
             Status::On => println!("Smart socket couldn't switch off"),
             Status::Off => {}
         }
     }
-    pub fn off(&mut self) {
-        match self.switch(Request::Off) {
+    pub fn on(&mut self) {
+        match self.switch(Request::On) {
             Status::On => {}
             Status::Off => println!("Smart socket couldn't switch on"),
         }
@@ -86,25 +83,18 @@ impl SmartSocket {
     pub fn power(&mut self) -> f64 {
         let res = self.send(Request::Power);
         match res {
-            None => return NAN,
+            None => NAN,
             Some(response) => match response {
                 Response::Power(power) => power,
                 _ => {
                     println!("Unexpectedly receive status response");
-                    return NAN;
+                    NAN
                 }
             },
         }
     }
-}
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_smartsocket() {
-        let client = SmartSocketStream::connect("127.0.0.1:12345").unwrap();
-        let _smartsocket = SmartSocket::new(client, String::from("a smart socket"));
+    pub fn shutdown(&mut self) {
+        self.client.shutdown().unwrap();
     }
 }

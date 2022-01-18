@@ -2,7 +2,7 @@ use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 use std::io::{Read, Write};
-use std::net::{Incoming, TcpListener, TcpStream, ToSocketAddrs};
+use std::net::{Incoming, Shutdown, TcpListener, TcpStream, ToSocketAddrs};
 
 pub struct SmartSocketServer {
     listener: TcpListener,
@@ -47,9 +47,7 @@ impl Iterator for SmartSocketIncoming<'_> {
 impl SmartSocketStream {
     pub fn connect<A: ToSocketAddrs>(addr: A) -> std::io::Result<SmartSocketStream> {
         let res = TcpStream::connect(addr)?;
-        let stream = SmartSocketStream {
-            stream: res,
-        };
+        let stream = SmartSocketStream { stream: res };
         Ok(stream)
     }
 
@@ -63,7 +61,11 @@ impl SmartSocketStream {
 
     pub fn send<T: Serialize>(&mut self, msg: T) -> std::io::Result<()> {
         let str = serde_json::to_string(&msg)?;
-        self.stream.write(str.as_bytes())?;
+        self.stream.write_all(str.as_bytes())?;
         Ok(())
+    }
+
+    pub fn shutdown(&self) -> std::io::Result<()> {
+        self.stream.shutdown(Shutdown::Both)
     }
 }

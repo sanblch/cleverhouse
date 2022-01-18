@@ -37,7 +37,7 @@ impl Thermometer {
                     let mut lock = temperature_ref.lock().unwrap();
                     *lock = f64::from_be_bytes(buf);
                 }
-                sleep(Duration::from_millis(1000));
+                sleep(Duration::from_millis(50));
             }
         });
     }
