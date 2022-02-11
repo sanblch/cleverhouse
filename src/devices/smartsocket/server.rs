@@ -24,8 +24,6 @@ impl Server {
     }
 
     pub fn run(&mut self) {
-        let mut rng = rand::thread_rng();
-
         for stream_res in self.server.incoming() {
             match stream_res {
                 Err(e) => {
@@ -38,36 +36,9 @@ impl Server {
                         match stream.receive() {
                             Ok(res) => {
                                 println!("request = {:?}", res);
-                                match res {
-                                    Request::On => {
-                                        self.status = Status::On;
-                                        Server::send(
-                                            &mut stream,
-                                            Response::Status(self.status.clone()),
-                                        );
-                                    }
-                                    Request::Off => {
-                                        self.status = Status::Off;
-                                        Server::send(
-                                            &mut stream,
-                                            Response::Status(self.status.clone()),
-                                        );
-                                    }
-                                    Request::Status => {
-                                        Server::send(
-                                            &mut stream,
-                                            Response::Status(self.status.clone()),
-                                        );
-                                    }
-                                    Request::Power => {
-                                        if self.status == Status::On {
-                                            self.power = 50.0 + rng.gen_range(0.0..1.0);
-                                        } else {
-                                            self.power = NAN;
-                                        }
-                                        Server::send(&mut stream, Response::Power(self.power));
-                                    }
-                                }
+                                let response =
+                                    Server::respond(res, &mut self.status, &mut self.power);
+                                Server::send(&mut stream, response);
                             }
                             Err(_) => receiving = false,
                         }
@@ -77,11 +48,34 @@ impl Server {
         }
     }
 
-    pub fn send(stream: &mut SmartSocketStream, response: Response) {
+    fn send(stream: &mut SmartSocketStream, response: Response) {
         match stream.send(response) {
             Ok(()) => {}
             Err(e) => {
                 println!("Error occured on send: {:?}", e);
+            }
+        }
+    }
+
+    fn respond(res: Request, status: &mut Status, power: &mut f64) -> Response {
+        match res {
+            Request::On => {
+                *status = Status::On;
+                Response::Status(status.clone())
+            }
+            Request::Off => {
+                *status = Status::Off;
+                Response::Status(status.clone())
+            }
+            Request::Status => Response::Status(status.clone()),
+            Request::Power => {
+                if *status == Status::On {
+                    let mut rng = rand::thread_rng();
+                    *power = 50.0 + rng.gen_range(0.0..1.0);
+                } else {
+                    *power = NAN;
+                }
+                Response::Power(*power)
             }
         }
     }
